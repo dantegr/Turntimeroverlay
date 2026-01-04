@@ -8,7 +8,7 @@ A standalone, draggable turn timer overlay for Roll20 that displays the current 
 ## Features
 
 - **Draggable Overlay** - Players and GM can drag the timer anywhere on the map
-- **Current Turn Display** - Shows whose turn it is with character/token name
+- **Current Turn Display** - Shows whose turn it is with token name
 - **Countdown Timer** - Visual countdown with color coding
   - 🟢 Green: Plenty of time
   - 🟠 Orange: Warning (15 seconds default)
@@ -62,7 +62,7 @@ Use `!tt config [setting] [value]` to change settings:
 | `duration` | 30 | Default turn time in seconds |
 | `warning` | 15 | When to show orange warning |
 | `danger` | 5 | When to show red danger |
-| `autoadvance` | true | Auto-advance when timer ends |
+| `autoadvance` | true | Auto-advance when timer ends (if false, stays at 0:00) |
 | `announce` | false | Announce turns in chat |
 | `whisper` | false | Whisper announcements to GM only |
 | `fontsize` | 56 | Size of overlay text |
@@ -82,7 +82,7 @@ Use `!tt config [setting] [value]` to change settings:
 
 ## Usage Example
 
-### Basic Combat Flow
+### Basic Combat Flow (Auto-Advance ON - default)
 
 1. **Set up turn order** in Roll20's turn tracker (add tokens, roll initiative)
 2. **Start the timer**: `!tt start` or `!tt start 60` for 60 seconds
@@ -94,6 +94,14 @@ Use `!tt config [setting] [value]` to change settings:
    - `!tt add 30` to give extra time
    - `!tt next` to skip a turn
    - `!tt stop` to end combat
+
+### Manual Advance Flow (Auto-Advance OFF)
+
+1. Disable auto-advance: `!tt config autoadvance false`
+2. **Start the timer**: `!tt start`
+3. When timer hits **0:00**, the overlay stays visible
+4. The GM manually advances with `!tt next` when ready
+5. Timer restarts for the next player
 
 ### Recommended Macros
 
@@ -187,6 +195,8 @@ When paused:
 - Adjusted warning threshold to 15 seconds
 - Adjusted danger threshold to 5 seconds
 - Disabled chat notifications by default (overlay only)
+- When autoAdvance is off, overlay stays visible at 0:00
+- Uses token name instead of character sheet name
 
 ### v1.0
 - Initial release

@@ -114,16 +114,7 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
             return currentTurn.custom || "Unknown";
         }
         
-        // Try to get character name first
-        const characterId = token.get("represents");
-        if (characterId) {
-            const character = getObj("character", characterId);
-            if (character) {
-                return character.get("name");
-            }
-        }
-        
-        // Fall back to token name
+        // Return token name
         return token.get("name") || "Unnamed Token";
     };
 
@@ -436,16 +427,20 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
                 }
             }, 1000);
         } else {
+            // Keep overlay visible at 0:00, just stop the timer
             state.TurnTimerOverlay.isRunning = false;
-            removeOverlay();
+            state.TurnTimerOverlay.remainingTime = 0;
+            updateOverlay(turnName, 0, false);
         }
     };
 
     const nextTurn = function() {
         if (advanceToNextTurn()) {
             const wasRunning = state.TurnTimerOverlay.isRunning;
+            const hasOverlay = state.TurnTimerOverlay.overlayId !== null;
             
-            if (wasRunning) {
+            // Start timer if it was running OR if overlay is visible (timer at 0)
+            if (wasRunning || hasOverlay) {
                 startTimer();
             } else {
                 sendNotification("Advanced to: " + getCurrentTurnName());
@@ -467,8 +462,10 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         setTurnOrder(turns);
         
         const wasRunning = state.TurnTimerOverlay.isRunning;
+        const hasOverlay = state.TurnTimerOverlay.overlayId !== null;
         
-        if (wasRunning) {
+        // Start timer if it was running OR if overlay is visible (timer at 0)
+        if (wasRunning || hasOverlay) {
             startTimer();
         } else {
             sendNotification("Went back to: " + getCurrentTurnName());

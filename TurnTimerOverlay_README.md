@@ -1,4 +1,4 @@
-# Turn Timer Overlay v1.0
+# Turn Timer Overlay v1.1
 ## A Roll20 API Script for Turn-Based Combat
 
 A standalone, draggable turn timer overlay for Roll20 that displays the current player's name and a countdown timer directly on the map.
@@ -8,6 +8,7 @@ A standalone, draggable turn timer overlay for Roll20 that displays the current 
 ## Features
 
 - **Draggable Overlay** - Players and GM can drag the timer anywhere on the map
+- **End Turn Button** - Draggable button to end turn early (just drag it!)
 - **Current Turn Display** - Shows whose turn it is with character/token name
 - **Countdown Timer** - Visual countdown with color coding
   - 🟢 Green: Plenty of time
@@ -62,6 +63,7 @@ Use `!tt config [setting] [value]` to change settings:
 | `warning` | 30 | When to show orange warning |
 | `danger` | 10 | When to show red danger |
 | `autoadvance` | true | Auto-advance when timer ends |
+| `button` | true | Show the End Turn button |
 | `announce` | true | Announce turns in chat |
 | `whisper` | false | Whisper announcements to GM only |
 | `fontsize` | 56 | Size of overlay text |
@@ -72,6 +74,7 @@ Use `!tt config [setting] [value]` to change settings:
 ```
 !tt config duration 90        // Set default timer to 90 seconds
 !tt config autoadvance false  // Disable auto-advance
+!tt config button false       // Hide the End Turn button
 !tt config whisper true       // Only GM sees announcements
 !tt config fontsize 72        // Make overlay larger
 !tt config reset              // Reset everything to defaults
@@ -122,13 +125,26 @@ The overlay will appear like this on your map:
 ```
 🎯 Gandalf the Grey
 ⏱️ 0:45
+
+⏭️ END TURN
 ```
 
 When paused:
 ```
 🎯 Gandalf the Grey
 ⏸️ 0:45 (PAUSED)
+
+⏭️ END TURN
 ```
+
+### End Turn Button
+
+The **⏭️ END TURN** button appears below the timer. To end your turn early:
+1. Simply **drag the button** in any direction
+2. The script detects the movement and advances to the next turn
+3. The button resets automatically for the next player
+
+This allows players to end their turn without needing chat commands!
 
 ---
 
@@ -178,6 +194,12 @@ Free to use and modify. Attribution appreciated but not required.
 ---
 
 ## Changelog
+
+### v1.1
+- Added draggable "End Turn" button
+- Button follows timer overlay when dragged
+- Button automatically triggers next turn when moved
+- New config option: `button` to show/hide the End Turn button
 
 ### v1.0
 - Initial release

@@ -1,15 +1,13 @@
 // ============================================
-// TURN TIMER OVERLAY v1.1
+// TURN TIMER OVERLAY v1.2
 // A Roll20 API Script
 // ============================================
 // Features:
 // - Draggable map overlay showing current turn & timer
-// - Draggable "End Turn" button on the map
 // - Auto-advance to next turn when timer expires
 // - Color-coded countdown (green → orange → red)
 // - Chat commands for full control
 // - Configurable timer duration
-// - Sound/visual notification options
 // ============================================
 
 var TurnTimerOverlay = TurnTimerOverlay || (function() {
@@ -20,9 +18,9 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
     // ==========================================
     const DEFAULT_CONFIG = {
         // Timer settings
-        defaultDuration: 60,        // Default turn time in seconds
-        warningThreshold: 30,       // Seconds remaining to show warning (orange)
-        dangerThreshold: 10,        // Seconds remaining to show danger (red)
+        defaultDuration: 30,        // Default turn time in seconds
+        warningThreshold: 15,       // Seconds remaining to show warning (orange)
+        dangerThreshold: 5,         // Seconds remaining to show danger (red)
         autoAdvance: true,          // Auto-advance to next turn when timer ends
         
         // Display settings
@@ -33,14 +31,6 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         dangerColor: "#FF0000",     // Red
         pausedColor: "#AAAAAA",     // Gray when paused
         
-        // Button settings
-        showEndTurnButton: true,    // Show the End Turn button
-        buttonFontSize: 36,
-        buttonColor: "#4A90D9",     // Blue button
-        buttonText: "⏭️ END TURN",
-        buttonOffsetX: 0,           // Horizontal offset from timer
-        buttonOffsetY: 80,          // Vertical offset from timer (below)
-        
         // Position (initial placement)
         initialLeft: 200,
         initialTop: 150,
@@ -48,7 +38,7 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         // Notifications
         announceInChat: true,       // Announce turn changes in chat
         whisperToGM: false,         // Whisper announcements to GM only
-        showTimeWarnings: true,     // Show warnings at 30s and 10s
+        showTimeWarnings: true,     // Show warnings at threshold times
         
         // Icons/Emojis
         turnIcon: "🎯",
@@ -64,13 +54,11 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         state.TurnTimerOverlay = state.TurnTimerOverlay || {};
         state.TurnTimerOverlay.config = state.TurnTimerOverlay.config || Object.assign({}, DEFAULT_CONFIG);
         state.TurnTimerOverlay.overlayId = state.TurnTimerOverlay.overlayId || null;
-        state.TurnTimerOverlay.buttonId = state.TurnTimerOverlay.buttonId || null;
         state.TurnTimerOverlay.isRunning = state.TurnTimerOverlay.isRunning || false;
         state.TurnTimerOverlay.isPaused = state.TurnTimerOverlay.isPaused || false;
         state.TurnTimerOverlay.remainingTime = state.TurnTimerOverlay.remainingTime || 0;
         state.TurnTimerOverlay.currentTurnName = state.TurnTimerOverlay.currentTurnName || "";
         state.TurnTimerOverlay.savedPosition = state.TurnTimerOverlay.savedPosition || null;
-        state.TurnTimerOverlay.buttonPosition = state.TurnTimerOverlay.buttonPosition || null;
     };
 
     const getConfig = function() {
@@ -202,7 +190,7 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         // Save position of existing overlay before removing
         saveOverlayPosition();
         
-        // Remove existing overlay and button
+        // Remove existing overlay
         removeOverlay();
         
         const position = getOverlayPosition();
@@ -222,11 +210,6 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         });
         
         state.TurnTimerOverlay.overlayId = overlay.id;
-        
-        // Create the End Turn button
-        if (config.showEndTurnButton) {
-            createEndTurnButton(position);
-        }
         
         return overlay;
     };
@@ -267,9 +250,6 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
             }
             state.TurnTimerOverlay.overlayId = null;
         }
-        
-        // Also remove the button
-        removeEndTurnButton();
     };
 
     const buildDisplayText = function(turnName, seconds, isPaused) {
@@ -285,125 +265,6 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         }
         
         return text;
-    };
-
-    // ==========================================
-    // END TURN BUTTON MANAGEMENT
-    // ==========================================
-    const createEndTurnButton = function(timerPosition) {
-        const config = getConfig();
-        
-        // Remove existing button first
-        removeEndTurnButton();
-        
-        // Calculate button position relative to timer
-        const buttonLeft = timerPosition.left + config.buttonOffsetX;
-        const buttonTop = timerPosition.top + config.buttonOffsetY;
-        
-        const button = createObj("text", {
-            _pageid: Campaign().get("playerpageid"),
-            layer: "objects",
-            left: buttonLeft,
-            top: buttonTop,
-            text: config.buttonText,
-            font_size: config.buttonFontSize,
-            font_family: config.fontFamily,
-            color: config.buttonColor,
-            controlledby: "all"
-        });
-        
-        state.TurnTimerOverlay.buttonId = button.id;
-        state.TurnTimerOverlay.buttonPosition = {
-            left: buttonLeft,
-            top: buttonTop
-        };
-        
-        return button;
-    };
-
-    const removeEndTurnButton = function() {
-        if (state.TurnTimerOverlay.buttonId) {
-            const button = getObj("text", state.TurnTimerOverlay.buttonId);
-            if (button) {
-                button.remove();
-            }
-            state.TurnTimerOverlay.buttonId = null;
-            state.TurnTimerOverlay.buttonPosition = null;
-        }
-    };
-
-    const handleButtonMove = function(obj) {
-        // Check if this is our End Turn button
-        if (obj.id !== state.TurnTimerOverlay.buttonId) {
-            return;
-        }
-        
-        // Check if timer is running
-        if (!state.TurnTimerOverlay.isRunning) {
-            // Reset button position and ignore
-            resetButtonPosition();
-            return;
-        }
-        
-        // Button was moved - trigger next turn!
-        sendNotification(state.TurnTimerOverlay.currentTurnName + " ended their turn early!");
-        
-        // Advance to next turn
-        nextTurn();
-    };
-
-    const resetButtonPosition = function() {
-        if (state.TurnTimerOverlay.buttonId && state.TurnTimerOverlay.buttonPosition) {
-            const button = getObj("text", state.TurnTimerOverlay.buttonId);
-            if (button) {
-                button.set({
-                    left: state.TurnTimerOverlay.buttonPosition.left,
-                    top: state.TurnTimerOverlay.buttonPosition.top
-                });
-            }
-        }
-    };
-
-    const updateButtonPosition = function() {
-        const config = getConfig();
-        
-        if (!state.TurnTimerOverlay.buttonId || !state.TurnTimerOverlay.overlayId) {
-            return;
-        }
-        
-        const overlay = getObj("text", state.TurnTimerOverlay.overlayId);
-        const button = getObj("text", state.TurnTimerOverlay.buttonId);
-        
-        if (overlay && button) {
-            const newLeft = overlay.get("left") + config.buttonOffsetX;
-            const newTop = overlay.get("top") + config.buttonOffsetY;
-            
-            button.set({
-                left: newLeft,
-                top: newTop
-            });
-            
-            state.TurnTimerOverlay.buttonPosition = {
-                left: newLeft,
-                top: newTop
-            };
-        }
-    };
-
-    const handleOverlayMove = function(obj) {
-        // Check if this is our timer overlay
-        if (obj.id !== state.TurnTimerOverlay.overlayId) {
-            return;
-        }
-        
-        // Update button position to follow the overlay
-        updateButtonPosition();
-        
-        // Save the new position
-        state.TurnTimerOverlay.savedPosition = {
-            left: obj.get("left"),
-            top: obj.get("top")
-        };
     };
 
     // ==========================================
@@ -720,7 +581,6 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
             configMsg += " {{Warning=" + config.warningThreshold + "s}}";
             configMsg += " {{Danger=" + config.dangerThreshold + "s}}";
             configMsg += " {{Auto Advance=" + config.autoAdvance + "}}";
-            configMsg += " {{Show Button=" + config.showEndTurnButton + "}}";
             configMsg += " {{Chat Announce=" + config.announceInChat + "}}";
             configMsg += " {{Whisper GM=" + config.whisperToGM + "}}";
             sendChat("Turn Timer", "/w " + msg.who + " " + configMsg);
@@ -729,19 +589,16 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         
         switch (setting) {
             case "duration":
-                setConfig("defaultDuration", parseInt(value) || 60);
+                setConfig("defaultDuration", parseInt(value) || 30);
                 break;
             case "warning":
-                setConfig("warningThreshold", parseInt(value) || 30);
+                setConfig("warningThreshold", parseInt(value) || 15);
                 break;
             case "danger":
-                setConfig("dangerThreshold", parseInt(value) || 10);
+                setConfig("dangerThreshold", parseInt(value) || 5);
                 break;
             case "autoadvance":
                 setConfig("autoAdvance", value === "true" || value === "on");
-                break;
-            case "button":
-                setConfig("showEndTurnButton", value === "true" || value === "on");
                 break;
             case "announce":
                 setConfig("announceInChat", value === "true" || value === "on");
@@ -777,7 +634,7 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
     const showHelp = function(msg) {
         const helpText = "/w " + msg.who + " " +
             "&{template:default} {{name=Turn Timer Help}}" +
-            " {{!tt start [seconds]=Start timer (default: 60s)}}" +
+            " {{!tt start [seconds]=Start timer (default: 30s)}}" +
             " {{!tt stop=Stop timer and remove overlay}}" +
             " {{!tt pause=Pause/Resume timer}}" +
             " {{!tt next=Advance to next turn}}" +
@@ -786,8 +643,7 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
             " {{!tt set [seconds]=Set timer to specific time}}" +
             " {{!tt status=Show current status}}" +
             " {{!tt config=Show/change settings}}" +
-            " {{Config Options=duration, warning, danger, autoadvance, button, announce, whisper, fontsize, reset}}" +
-            " {{End Turn Button=Drag the END TURN button to end turn early}}";
+            " {{Config Options=duration, warning, danger, autoadvance, announce, whisper, fontsize, reset}}";
         
         sendChat("Turn Timer", helpText);
     };
@@ -812,38 +668,17 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         }
     };
 
-    const handleTextChange = function(obj, prev) {
-        // Check if this is our End Turn button being moved
-        if (obj.id === state.TurnTimerOverlay.buttonId) {
-            // Check if position actually changed
-            if (obj.get("left") !== prev.left || obj.get("top") !== prev.top) {
-                handleButtonMove(obj);
-            }
-            return;
-        }
-        
-        // Check if this is our timer overlay being moved
-        if (obj.id === state.TurnTimerOverlay.overlayId) {
-            // Check if position actually changed
-            if (obj.get("left") !== prev.left || obj.get("top") !== prev.top) {
-                handleOverlayMove(obj);
-            }
-            return;
-        }
-    };
-
     // ==========================================
     // INITIALIZATION
     // ==========================================
     const registerEventHandlers = function() {
         on("chat:message", handleChatMessage);
         on("change:campaign:turnorder", handleTurnOrderChange);
-        on("change:text", handleTextChange);
     };
 
     const checkVersion = function() {
         log("=".repeat(50));
-        log("Turn Timer Overlay v1.1 loaded successfully!");
+        log("Turn Timer Overlay v1.2 loaded successfully!");
         log("Type !tt help for commands");
         log("=".repeat(50));
     };

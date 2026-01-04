@@ -1,4 +1,4 @@
-# Turn Timer Overlay v1.1
+# Turn Timer Overlay v1.2
 ## A Roll20 API Script for Turn-Based Combat
 
 A standalone, draggable turn timer overlay for Roll20 that displays the current player's name and a countdown timer directly on the map.
@@ -8,12 +8,11 @@ A standalone, draggable turn timer overlay for Roll20 that displays the current 
 ## Features
 
 - **Draggable Overlay** - Players and GM can drag the timer anywhere on the map
-- **End Turn Button** - Draggable button to end turn early (just drag it!)
 - **Current Turn Display** - Shows whose turn it is with character/token name
 - **Countdown Timer** - Visual countdown with color coding
   - 🟢 Green: Plenty of time
-  - 🟠 Orange: Warning (30 seconds default)
-  - 🔴 Red: Danger (10 seconds default)
+  - 🟠 Orange: Warning (15 seconds default)
+  - 🔴 Red: Danger (5 seconds default)
 - **Auto-Advance** - Automatically moves to next turn when timer expires
 - **Pause/Resume** - Pause the timer without losing progress
 - **Chat Commands** - Full control via simple chat commands
@@ -29,7 +28,7 @@ A standalone, draggable turn timer overlay for Roll20 that displays the current 
 3. Name it `TurnTimerOverlay`
 4. Copy and paste the entire contents of `TurnTimerOverlay.js`
 5. Click **"Save Script"**
-6. The API sandbox will restart and you'll see "Turn Timer Overlay v1.0 loaded successfully!" in the API console
+6. The API sandbox will restart and you'll see "Turn Timer Overlay v1.2 loaded successfully!" in the API console
 
 ---
 
@@ -39,8 +38,8 @@ All commands start with `!tt` or `!turntimer`
 
 | Command | Description |
 |---------|-------------|
-| `!tt start` | Start timer with default duration (60s) |
-| `!tt start 90` | Start timer with 90 seconds |
+| `!tt start` | Start timer with default duration (30s) |
+| `!tt start 60` | Start timer with 60 seconds |
 | `!tt stop` | Stop timer and remove overlay |
 | `!tt pause` | Pause/Resume the timer |
 | `!tt next` | Skip to next turn |
@@ -59,11 +58,10 @@ Use `!tt config [setting] [value]` to change settings:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `duration` | 60 | Default turn time in seconds |
-| `warning` | 30 | When to show orange warning |
-| `danger` | 10 | When to show red danger |
+| `duration` | 30 | Default turn time in seconds |
+| `warning` | 15 | When to show orange warning |
+| `danger` | 5 | When to show red danger |
 | `autoadvance` | true | Auto-advance when timer ends |
-| `button` | true | Show the End Turn button |
 | `announce` | true | Announce turns in chat |
 | `whisper` | false | Whisper announcements to GM only |
 | `fontsize` | 56 | Size of overlay text |
@@ -72,9 +70,8 @@ Use `!tt config [setting] [value]` to change settings:
 ### Examples
 
 ```
-!tt config duration 90        // Set default timer to 90 seconds
+!tt config duration 60        // Set default timer to 60 seconds
 !tt config autoadvance false  // Disable auto-advance
-!tt config button false       // Hide the End Turn button
 !tt config whisper true       // Only GM sees announcements
 !tt config fontsize 72        // Make overlay larger
 !tt config reset              // Reset everything to defaults
@@ -87,7 +84,7 @@ Use `!tt config [setting] [value]` to change settings:
 ### Basic Combat Flow
 
 1. **Set up turn order** in Roll20's turn tracker (add tokens, roll initiative)
-2. **Start the timer**: `!tt start` or `!tt start 90` for 90 seconds
+2. **Start the timer**: `!tt start` or `!tt start 60` for 60 seconds
 3. **Timer appears** on the map showing current character and countdown
 4. **Drag the overlay** to your preferred position (it will remember the spot)
 5. When timer expires, it **auto-advances** to the next turn
@@ -124,27 +121,14 @@ The overlay will appear like this on your map:
 
 ```
 🎯 Gandalf the Grey
-⏱️ 0:45
-
-⏭️ END TURN
+⏱️ 0:25
 ```
 
 When paused:
 ```
 🎯 Gandalf the Grey
-⏸️ 0:45 (PAUSED)
-
-⏭️ END TURN
+⏸️ 0:25 (PAUSED)
 ```
-
-### End Turn Button
-
-The **⏭️ END TURN** button appears below the timer. To end your turn early:
-1. Simply **drag the button** in any direction
-2. The script detects the movement and advances to the next turn
-3. The button resets automatically for the next player
-
-This allows players to end their turn without needing chat commands!
 
 ---
 
@@ -155,6 +139,13 @@ This allows players to end their turn without needing chat commands!
 3. **Disable auto-advance** (`!tt config autoadvance false`) if you prefer manual control
 4. **Whisper to GM** (`!tt config whisper true`) for a quieter experience
 5. **Create macros** for common actions to avoid typing commands
+
+---
+
+## Known Limitations
+
+- **No text stroke/outline**: Roll20's text objects don't support stroke styling. For better visibility, use a larger font size or position the overlay over a darker area of the map.
+- **Position resets on page change**: If players move to a different page, the overlay position may reset.
 
 ---
 
@@ -187,19 +178,13 @@ This allows players to end their turn without needing chat commands!
 
 ---
 
-## License
-
-Free to use and modify. Attribution appreciated but not required.
-
----
-
 ## Changelog
 
-### v1.1
-- Added draggable "End Turn" button
-- Button follows timer overlay when dragged
-- Button automatically triggers next turn when moved
-- New config option: `button` to show/hide the End Turn button
+### v1.2
+- Simplified codebase (removed button feature)
+- Changed default timer to 30 seconds
+- Adjusted warning threshold to 15 seconds
+- Adjusted danger threshold to 5 seconds
 
 ### v1.0
 - Initial release

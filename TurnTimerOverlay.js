@@ -35,10 +35,10 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
         initialLeft: 200,
         initialTop: 150,
         
-        // Notifications
-        announceInChat: true,       // Announce turn changes in chat
+        // Notifications (all disabled by default)
+        announceInChat: false,      // Announce turn changes in chat
         whisperToGM: false,         // Whisper announcements to GM only
-        showTimeWarnings: true,     // Show warnings at threshold times
+        showTimeWarnings: false,    // Show warnings at threshold times
         
         // Icons/Emojis
         turnIcon: "🎯",

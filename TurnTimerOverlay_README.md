@@ -15,6 +15,7 @@ A standalone, draggable turn timer overlay for Roll20 that displays the current 
   - 🔴 Red: Danger (5 seconds default)
 - **Auto-Advance** - Automatically moves to next turn when timer expires
 - **Pause/Resume** - Pause the timer without losing progress
+- **Silent by Default** - No chat spam, just the overlay
 - **Chat Commands** - Full control via simple chat commands
 - **Configurable** - Customize duration, colors, notifications, and more
 - **Position Memory** - Remembers where you dragged it between turns
@@ -62,7 +63,7 @@ Use `!tt config [setting] [value]` to change settings:
 | `warning` | 15 | When to show orange warning |
 | `danger` | 5 | When to show red danger |
 | `autoadvance` | true | Auto-advance when timer ends |
-| `announce` | true | Announce turns in chat |
+| `announce` | false | Announce turns in chat |
 | `whisper` | false | Whisper announcements to GM only |
 | `fontsize` | 56 | Size of overlay text |
 | `reset` | - | Reset all settings to defaults |
@@ -72,7 +73,7 @@ Use `!tt config [setting] [value]` to change settings:
 ```
 !tt config duration 60        // Set default timer to 60 seconds
 !tt config autoadvance false  // Disable auto-advance
-!tt config whisper true       // Only GM sees announcements
+!tt config announce true      // Enable chat announcements
 !tt config fontsize 72        // Make overlay larger
 !tt config reset              // Reset everything to defaults
 ```
@@ -137,7 +138,7 @@ When paused:
 1. **Position the overlay** in a corner that doesn't obstruct gameplay
 2. **Use larger font size** (`!tt config fontsize 72`) for streaming or large displays
 3. **Disable auto-advance** (`!tt config autoadvance false`) if you prefer manual control
-4. **Whisper to GM** (`!tt config whisper true`) for a quieter experience
+4. **Enable chat announcements** (`!tt config announce true`) if you want turn notifications
 5. **Create macros** for common actions to avoid typing commands
 
 ---
@@ -185,6 +186,7 @@ When paused:
 - Changed default timer to 30 seconds
 - Adjusted warning threshold to 15 seconds
 - Adjusted danger threshold to 5 seconds
+- Disabled chat notifications by default (overlay only)
 
 ### v1.0
 - Initial release

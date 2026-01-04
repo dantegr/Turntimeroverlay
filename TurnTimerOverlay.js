@@ -649,18 +649,17 @@ var TurnTimerOverlay = TurnTimerOverlay || (function() {
     // EVENT HANDLERS
     // ==========================================
     const handleTurnOrderChange = function() {
-        // Only update if timer is running and not paused
-        if (state.TurnTimerOverlay.isRunning && !state.TurnTimerOverlay.isPaused) {
+        const hasOverlay = state.TurnTimerOverlay.overlayId !== null;
+        
+        // If timer is running OR overlay is visible (waiting at 0:00)
+        if (state.TurnTimerOverlay.isRunning || hasOverlay) {
             const newTurnName = getCurrentTurnName();
             
             // Check if turn actually changed (not just reordering)
             if (newTurnName !== state.TurnTimerOverlay.currentTurnName) {
                 // Turn changed externally (e.g., via Roll20 UI)
-                state.TurnTimerOverlay.currentTurnName = newTurnName;
-                state.TurnTimerOverlay.remainingTime = getConfig().defaultDuration;
-                
-                updateOverlay(newTurnName, state.TurnTimerOverlay.remainingTime, false);
-                sendNotification(newTurnName + "'s turn! (" + formatTime(state.TurnTimerOverlay.remainingTime) + ")");
+                // Start fresh timer for new turn
+                startTimer();
             }
         }
     };
